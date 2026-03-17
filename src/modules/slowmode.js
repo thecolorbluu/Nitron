@@ -1,5 +1,23 @@
-const { PermissionsBitField } = require('discord.js');
+const { PermissionsBitField, inlineCode } = require('discord.js');
 const config = require('../../config');
+const timeMap = {
+  "day": 86400,
+  "hour": 3600,
+  "minute": 60,
+  "second": 1
+};
+
+function parseDuration(duration) {
+  const split = duration.toLowerCase().split(' ');
+  let totalDuration = 0;
+  for (let i=0; split.length>i+1; i+=2) {
+    const value1 = split[i];
+    if (!Number(value1)) continue;
+    const value2 = split[i+1].replace(/s$/, '');
+    totalDuration += value1 * ( timeMap[value2] ?? 1 );
+  }
+  return totalDuration;
+};
 
 const slowmode = async (interaction) => {
   const modRole = await interaction.guild.roles.fetch(config.modRoleId);
@@ -35,7 +53,7 @@ const slowmode = async (interaction) => {
       );
     }
 
-    slowmodeTime = parseInt(slowmodeTime);
+    slowmodeTime = parseDuration(slowmodeTime);
 
     if (currentRateLimit > 0) {
       if (currentRateLimit === slowmodeTime) {
